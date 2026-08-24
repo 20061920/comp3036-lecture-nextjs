@@ -6,8 +6,8 @@ declare global {
 }
 
 export const createClient = () => {
-  if (global.prisma) {
-    return global.prisma;
+  if (globalThis.prisma) {
+    return globalThis.prisma;
   }
 
   const URL = env.DATABASE_URL;
@@ -19,7 +19,7 @@ export const createClient = () => {
   console.log("Connected to database");
   console.log(URL);
 
-  global.prisma = prisma;
+  globalThis.prisma = prisma;
   return prisma;
 };
 

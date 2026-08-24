@@ -17,3 +17,13 @@ export function categories<T>(
       [] as { name: string; count: number }[],
     );
 }
+
+//make an array of each post that is active and map its category
+export function getCategoryList(posts: { category: string; active: boolean }[]): string[] {
+  return [...new Set(
+            posts
+                .filter((post) => post.active)
+                .map((post) => post.category)
+        ),
+    ];
+  }

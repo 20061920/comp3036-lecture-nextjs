@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
+// @ts-ignore: side-effect import for global CSS
 import "./globals.css";
 
 const geistSans = localFont({
@@ -23,6 +24,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
@@ -31,3 +33,5 @@ export default async function RootLayout({
     </html>
   );
 }
+
+
