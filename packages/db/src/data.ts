@@ -103,4 +103,21 @@ export const posts: Post[] = [
     likes: 1,
     active: false,
   },
+  {
+    id: 5,
+    title: "Extra Data ",
+    urlId: "extra-data",
+    description: `Illo sint voluptas. Error voluptates culpa eligendi. 
+       Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. 
+       Sed exercitationem placeat consectetur nulla deserunt vel 
+       iusto corrupti dicta laboris incididunt.`,
+    content: content + " ... post5",
+    imageUrl: "",
+    date: new Date("Jan 16, 2012"),
+    category: "React",
+    tags: "Programming,Mainframes",
+    views: 25,
+    likes: 23,
+    active: true,
+  },
 ];
