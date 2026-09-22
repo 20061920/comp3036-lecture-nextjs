@@ -1,23 +1,20 @@
 "use client";
 
 import { toUrlPath } from "@repo/utils/url";
-import { history } from "@/functions/history";
-import { posts } from "@repo/db/data";
-import { useState} from "react"
-import { useRouter } from "next/navigation";
 
 export function Navigation({
     categoryList,
     tagList,
+    dateList,
 }: {
     categoryList: string[];
     tagList: string[];
+    dateList: { month: number; year: number }[];
 }) {
 
     return (
         
-        <div className="blog-body">
-            <aside className="blog-sidebar">
+        <aside className="blog-sidebar">
                 <nav aria-label="Primary navigation">
                     <ul className="blog-nav-list">
                         {categoryList.map((item) => (
@@ -33,7 +30,7 @@ export function Navigation({
 
                 <nav aria-label="Secondary navigation" className="blog-nav-secondary">
                     <ul className="blog-nav-list">
-                        {history(posts).map(({ month, year }) => {
+                        {dateList.map(({ month, year }) => {
                             const monthName = new Date(year, month - 1).toLocaleString(undefined, { month: "long" });
                             const key = `${year}-${String(month).padStart(2, "0")}`;
                             return (
@@ -58,7 +55,6 @@ export function Navigation({
                         ))}
                     </ul>
                 </nav>
-            </aside>
-        </div>
+        </aside>
     );
 }

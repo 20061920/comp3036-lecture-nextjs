@@ -45,34 +45,45 @@ export function Search() {
 }
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-
-  // Read saved theme on mount and apply it
-  useEffect(() => {
+  // Read localStorage ONCE, during first render, on the client.
+  // Returns false on the server (typeof window === "undefined").
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
     try {
-      const savedTheme = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
-      if (savedTheme === "dark") {
-        setIsDark(true);
-        document.body.classList.add("dark-mode");
-      }
-    } catch (e) {
-      // ignore
+      return localStorage.getItem("theme") === "dark";
+    } catch {
+      return false;
     }
-  }, []);
+  });
 
-  // Apply the class to <body> and persist whenever isDark changes
+  // Track whether we're mounted so we don't render a stale label before hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Apply the class whenever isDark changes (including the very first client render).
   useEffect(() => {
     document.body.classList.toggle("dark-mode", isDark);
   }, [isDark]);
+
+  // Persist ONLY when the user actually toggles — not on mount.
+  function toggle() {
+    setIsDark((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("theme", next ? "dark" : "light");
+      } catch {}
+      return next;
+    });
+  }
 
   return (
     <button
       type="button"
       className="theme-button"
       aria-label="Toggle theme"
-      onClick={() => setIsDark((prev) => !prev)}
+      onClick={toggle}
     >
-      {isDark ? "Light Mode" : "Dark Mode"}
+      {mounted ? (isDark ? "Light Mode" : "Dark Mode") : "Dark Mode"}
     </button>
   );
 }
