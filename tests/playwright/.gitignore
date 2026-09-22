@@ -6,3 +6,4 @@ node_modules/
 .auth
 .neon
 .env.local
+.auth/
