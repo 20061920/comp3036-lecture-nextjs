@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
-// @ts-expect-error: side-effect import for global CSS
+
 import "./globals.css";
 
 const roboto = Roboto({
