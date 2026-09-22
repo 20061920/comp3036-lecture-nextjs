@@ -26,3 +26,12 @@ test("returns categories with count", async () => {
     { name: "D", count: 2 },
   ]);
 });
+
+test("sorts alphabetically", async () => {
+  const result = await categories([
+    { category: "Zebra", active: true },
+    { category: "Apple", active: true },
+    { category: "Mango", active: true },
+  ]);
+  expect(result.map((c) => c.name)).toEqual(["Apple", "Mango", "Zebra"]);
+});

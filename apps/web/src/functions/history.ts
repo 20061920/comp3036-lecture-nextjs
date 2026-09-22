@@ -24,11 +24,3 @@ const map = new Map<string, number>();
     .sort((a, b) => (b.year - a.year) || (b.month - a.month)); // newest first
 }
 
-export function getDateList(posts: { date: Date; active: boolean }[]): Date[] {
-  return [...new Set(
-            posts
-                .filter((post) => post.active)
-                .map((post) => post.date)
-        ),
-    ];
-  }

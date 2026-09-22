@@ -1,20 +1,16 @@
 // import { seed } from "@repo/db/seed";
 import { expect, test } from "./fixtures";
 
-// test.beforeAll(async () => {
-//   await seed();
-// });
-
-test.describe("SPEC NAME", () => {
+test.describe("Homepage", () => {
   test(
-    "Spec details",
+    "loads the homepage and displays the blog page",
     {
-      tag: "@your-tag",
+      tag: "@a1",
     },
     async ({ page }) => {
       await page.goto("/");
 
-      await expect(await page.getByText("text")).toBeVisible();
+      await expect(page.getByText("From the Blog")).toBeVisible();
     },
   );
 });
