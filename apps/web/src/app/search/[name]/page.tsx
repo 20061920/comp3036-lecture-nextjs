@@ -5,6 +5,7 @@ import { Search} from "@/components/SearchHeader";
 import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
 import { history } from "@/functions/history";
+import Image from "next/image";
 
 function scorePost(title: string, query: string): number {
 
@@ -76,7 +77,7 @@ export default async function SearchResults({
               pageResults.map((post) => (
                 <article key={post.id} className="blog-card">
                   <div className="blog-card-image" aria-hidden="true">
-                    <img src={post.imageUrl} alt={post.title} />
+                    <Image src={post.imageUrl} alt={post.title} width={280} height={180} />
                   </div>
                   <div className="blog-card-body">
                     <h3>

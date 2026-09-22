@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function Search() {
 
@@ -22,7 +23,7 @@ export function Search() {
 
     return (
         <header className="blog-header">
-            <a className="blog-brand" href="/">FullStack Blog</a>
+            <Link href="/">FullStack Blog</Link>
 
              <form className="blog-search-wrap" onSubmit={handleSearchSubmit}>
         <svg className="blog-search-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -71,7 +72,9 @@ export function ThemeToggle() {
       const next = !prev;
       try {
         localStorage.setItem("theme", next ? "dark" : "light");
-      } catch {}
+      } catch {
+        // do nothing
+      }
       return next;
     });
   }

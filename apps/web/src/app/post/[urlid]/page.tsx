@@ -1,5 +1,4 @@
 import { posts } from "@repo/db/data";
-import { toUrlPath } from "@repo/utils/url";
 import Image from 'next/image'
 import { Press_Start_2P } from 'next/font/google';
 import { notFound } from 'next/navigation';

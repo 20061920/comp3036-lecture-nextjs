@@ -7,6 +7,7 @@ import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
 import { LikeButton } from "@/components/LikeButton";
 import DOMPurify from "isomorphic-dompurify"; //used to sanitize the html content and prevent XSS attacks
+import Image from "next/image";
 
 export default async function DetailsPost({ params }: { params: Promise<{ name: string }> }) {
 
@@ -49,8 +50,8 @@ export default async function DetailsPost({ params }: { params: Promise<{ name: 
                     {selectedPost ? (
                         <article className="post-detail">
                             <div className="post-detail-image">
-                                <img src={selectedPost.imageUrl} alt={selectedPost.title} />
-                            </div>
+                                <Image src={selectedPost.imageUrl} alt={selectedPost.title} width={280} height={180} />
+                            </div>  
 
                             <div className="post-detail-body">
                                 <span className="blog-card-tag">{selectedPost.category}</span>

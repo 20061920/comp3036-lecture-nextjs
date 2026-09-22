@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import styles from "./PostForm.module.css";
 import { RichTextEditor } from "./RichTextEditor";
+import Link from "next/link";
 
 interface Post {
   id?: string;
@@ -34,9 +35,6 @@ export function PostForm({ initialPost, isEdit = false }: PostFormProps) {
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPreview, setShowPreview] = useState(false);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
-  const cursorPositionRef = useRef<number>(0);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -75,30 +73,6 @@ export function PostForm({ initialPost, isEdit = false }: PostFormProps) {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleTogglePreview = () => {
-    if (!showPreview) {
-      // Save cursor position before showing preview
-      if (contentRef.current) {
-        cursorPositionRef.current = contentRef.current.selectionStart || 0;
-      }
-      setShowPreview(true);
-    } else {
-      setShowPreview(false);
-      // Restore cursor position
-      if (contentRef.current) {
-        setTimeout(() => {
-          if (contentRef.current) {
-            contentRef.current.focus();
-            contentRef.current.setSelectionRange(
-              cursorPositionRef.current,
-              cursorPositionRef.current
-            );
-          }
-        }, 0);
-      }
-    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -264,6 +238,7 @@ export function PostForm({ initialPost, isEdit = false }: PostFormProps) {
 
           {formData.imageUrl && (
             <div className={styles.imagePreview}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={formData.imageUrl}
                 alt="Preview"
@@ -280,9 +255,9 @@ export function PostForm({ initialPost, isEdit = false }: PostFormProps) {
           <button type="submit" className={styles.saveButton}>
             {isEdit ? "Save" : "Create Post"}
           </button>
-          <a href="/" className={styles.cancelButton}>
+          <Link href="/" className={styles.cancelButton}>
             Cancel
-          </a>
+          </Link>
         </div>
         </form>
       </div>

@@ -1,4 +1,4 @@
-export function categories<T>(
+export function categories(
   posts: { category: string; active: boolean }[],
 ): { name: string; count: number }[] {
   return posts

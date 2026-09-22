@@ -5,6 +5,7 @@ import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
 import { history } from "@/functions/history";
 import { Search } from "@/components/SearchHeader";
+import Image from "next/image";
 
 const POSTS_PER_PAGE = 6;
 
@@ -61,7 +62,7 @@ export default async function Home({
                         {pagePosts.map((post) => (
                             <article key={post.title} className="blog-card">
                                 <div className="blog-card-image" aria-hidden="true">
-                                    <img src={post.imageUrl} alt={post.title} />
+                                    <Image src={post.imageUrl} alt={post.title} width={280} height={180} />
                                 </div>
                                 <div className="blog-card-body">
                                     <h3>

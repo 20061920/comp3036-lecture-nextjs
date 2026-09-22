@@ -3,6 +3,7 @@ import { isLoggedIn } from "../utils/auth";
 import { ActiveStatusButton } from "../components/ActiveStatusButton";
 import { LogoutButton } from "../components/LogoutButton";
 import styles from "./page.module.css";
+import Image from "next/image";
 
 
 type AdminSearchParams = {
@@ -181,7 +182,7 @@ export default async function Home({
             {pagePosts.map((post) => (
               <article key={post.id} className={styles.postCard}>
                 <div className={styles.cardImage} aria-hidden="true">
-                  <img src={post.imageUrl} alt={post.title} />
+                  <Image src={post.imageUrl} alt={post.title} width={280} height={180} />
                 </div>
 
                 <div className={styles.cardBody}>
