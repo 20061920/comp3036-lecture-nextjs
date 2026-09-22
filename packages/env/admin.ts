@@ -7,6 +7,7 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
+    ADMIN_USERNAME: z.string(),
     PASSWORD: z.string(),
     JWT_SECRET: z.string(),
   },
@@ -25,6 +26,7 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
+    ADMIN_USERNAME: process.env.ADMIN_USERNAME,
     // E2E: process.env.E2E,
     PASSWORD: process.env.PASSWORD,
     JWT_SECRET: process.env.JWT_SECRET,

@@ -17,4 +17,4 @@ test("can click", async () => {
   await button.click();
 
   expect(spy).toHaveBeenCalled();
-});
+}); 
