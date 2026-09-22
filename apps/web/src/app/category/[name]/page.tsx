@@ -55,8 +55,8 @@ export default async function Home({
                 <section className="blog-content">
 
                     <div className="blog-section-head">
-                        <h2>From The Blog</h2>
-                    </div>
+                        <h2>{decodeURIComponent(name)}</h2>
+                    </div> 
 
                     <div className="blog-grid">
                         {pagePosts.map((post) => (
