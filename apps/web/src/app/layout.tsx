@@ -21,17 +21,24 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('theme') === 'dark') {
+                  document.body.classList.add('dark-mode');
+                }
+              } catch (e) {}
+            `,
+          }} // renders the dark mode class first on the server side to avoid flickering
+        />
         {children}
       </body>
     </html>
-  );
+  ); 
 }
-
-

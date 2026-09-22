@@ -1,12 +1,24 @@
-import { posts } from "@repo/db/data";
+import { client } from "@repo/db/client";
 import { Navigation } from "@/components/Navigation";
 import { Search } from "@/components/SearchHeader";
 import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
-import { getDateList } from "@/functions/history";
+import { history } from "@/functions/history";
 
 
-export default async function Home() {
+const POSTS_PER_PAGE = 6;
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string }>;
+}) {
+  const posts = await client.db.post.findMany({ where: { active: true } });
+  const params = searchParams ? await searchParams : {};
+  const requestedPage = Number.parseInt(params.page ?? "1", 10);
+  const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
+  const currentPage = Math.min(Math.max(Number.isNaN(requestedPage) ? 1 : requestedPage, 1), totalPages);
+  const pagePosts = posts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
 
   //make an array of each post tags that are active and split them where there is a comma to make them independent
     const tagList = getTagList(posts);
@@ -15,28 +27,29 @@ export default async function Home() {
     const categoryList = getCategoryList(posts);
     
     //make an array of each post that is active and map its date.
-    const Datelist = getDateList(posts);
+    const Datelist = history(posts);
 
 
   return (
     <main className="blog-page">
       <Search/>
 
-      <div className="blog-body">
+      <div className="blog-layout">
         <Navigation
           categoryList={categoryList}
 
           tagList={tagList}
+          dateList={Datelist}
         />
 
         <section className="blog-content">
 
           <div className="blog-section-head">
-            <h2>From The Blog</h2>
+              <h2>From The Blog</h2>
           </div>
 
           <div className="blog-grid">
-            {posts.filter((post) => post.active).map((post) => (
+            {pagePosts.map((post) => (
               <article key={post.title} className="blog-card">
                 <div className="blog-card-image" aria-hidden="true">
                   <img src={post.imageUrl} alt={post.title} />
@@ -64,20 +77,24 @@ export default async function Home() {
                     <div className="blog-meta-right">
                       <span className="blog-date">{new Date(post.date).toLocaleDateString()}</span>
                       <span className="blog-views">{post.views} views</span>
+                      <span className="blog-likes">{post.likes} likes</span>
 
-                      <button className="Btn">
-                        <span className="leftContainer">
-                          <svg fill="white" viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"></path></svg>
-                          <span className="like">Like</span>
-                        </span>
-                        <span className="likeCount">{post.likes.toLocaleString()}</span>
-                      </button>
                     </div>
                   </div>
                 </div>
               </article>
             ))}
           </div>
+
+          <nav className="pagination" aria-label="Blog pages">
+            {currentPage > 1 ? (
+              <a href={`/?page=${currentPage - 1}`} className="pagination-link">Previous</a>
+            ) : <span className="pagination-link pagination-link--disabled">Previous</span>}
+            <span className="pagination-status">Page {currentPage} of {totalPages}</span>
+            {currentPage < totalPages ? (
+              <a href={`/?page=${currentPage + 1}`} className="pagination-link">Next</a>
+            ) : <span className="pagination-link pagination-link--disabled">Next</span>}
+          </nav>
         </section>
       </div>
     </main>

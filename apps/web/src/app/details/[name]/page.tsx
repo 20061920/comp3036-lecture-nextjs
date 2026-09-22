@@ -1,27 +1,37 @@
-import { posts } from "@repo/db/data";
-import { toUrlPath } from "@repo/utils/url";
+import { client } from "@repo/db/client";
+import styles from "./page.module.css";
 import { Navigation } from "@/components/Navigation";
 import { history } from "@/functions/history";
-import ReactMarkdown from "react-markdown";
 import { Search } from "@/components/SearchHeader";
 import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
+import { LikeButton } from "@/components/LikeButton";
+import DOMPurify from "isomorphic-dompurify"; //used to sanitize the html content and prevent XSS attacks
 
-export default async function DetailsPost({ params }: { params: { name: string } }) {
+export default async function DetailsPost({ params }: { params: Promise<{ name: string }> }) {
 
     const { name } = await params;
-
+    
+    const postBeforeView = await client.db.post.findFirst({
+        where: { urlId: name, active: true },
+    });
+    const selectedPost = postBeforeView
+        ? await client.db.post.update({
+            where: { id: postBeforeView.id },
+            data: { views: { increment: 1 } },
+        })
+        : null;
+        // Increment the view count for the selected post if it exists. If the post is found, update its view count by incrementing it by 1. If not found, set selectedPost to null.
+    const posts = await client.db.post.findMany({ where: { active: true } });
     //make an array of each post tags that are active and split them where there is a comma to make them independent
+
     const tagList = getTagList(posts);
 
     //make an array of each post that is active and map its category
     const categoryList = getCategoryList(posts);
+    const dateList = history(posts);
 
     //searches to return the one with the same title 
-    const selectedPost = posts.find(
-        (post) => post.active && toUrlPath(post.title).toLowerCase() === name,
-    );
-
     return (
         <main className="blog-page">
             <Search />
@@ -30,6 +40,7 @@ export default async function DetailsPost({ params }: { params: { name: string }
                 <Navigation
                     categoryList={categoryList}
                     tagList={tagList}
+                    dateList={dateList}
                 />
 
                 <section className="blog-content">
@@ -44,7 +55,12 @@ export default async function DetailsPost({ params }: { params: { name: string }
                             <div className="post-detail-body">
                                 <span className="blog-card-tag">{selectedPost.category}</span>
                                 <h1>{selectedPost.title}</h1>
-                                <ReactMarkdown>{selectedPost.content}</ReactMarkdown>
+                                <div
+                                className={styles["post-detail-content"]}
+                                dangerouslySetInnerHTML={{
+                                    __html: DOMPurify.sanitize(selectedPost.content),
+                                }}
+                                />
 
                                 <div className="post-detail-meta">
                                     <span className="blog-date">
@@ -57,13 +73,7 @@ export default async function DetailsPost({ params }: { params: { name: string }
                                             {selectedPost.tags.split(",").map((t) => (
                                                 <span key={t} className="blog-tag">{`#${t.trim()}`}</span>
                                             ))}
-                                            <button className="Btn">
-                                                <span className="leftContainer">
-                                                    <svg fill="white" viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"></path></svg>
-                                                    <span className="like">Like</span>
-                                                </span>
-                                                <span className="likeCount">{selectedPost.likes.toLocaleString()}</span>
-                                            </button>
+                                            <LikeButton postId={selectedPost.id} initialLikes={selectedPost.likes} />
                                         </div>
 
 

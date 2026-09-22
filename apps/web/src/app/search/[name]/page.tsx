@@ -1,9 +1,10 @@
-import { posts } from "@repo/db/data";
+import { client } from "@repo/db/client";
 import { toUrlPath } from "@repo/utils/url";
 import { Navigation } from "@/components/Navigation";
 import { Search} from "@/components/SearchHeader";
 import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
+import { history } from "@/functions/history";
 
 function scorePost(title: string, query: string): number {
 
@@ -17,26 +18,41 @@ function scorePost(title: string, query: string): number {
   return 0;
 }
 
-export default async function SearchResults({ params }: { params: { name: string } }) {
+const POSTS_PER_PAGE = 6;
+
+export default async function SearchResults({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ name: string }>;
+  searchParams?: Promise<{ page?: string }>;
+}) {
 
   const { name } = await params;
+  const posts = await client.db.post.findMany({ where: { active: true } });
 
   //decodes the typed input in the search bar and reformats any spaces
   const decoded = decodeURIComponent(name);
 
   //based on score results map everything and show the top result
   const results = posts
-    .filter((post) => post.active)
     .map((post) => ({ post, score: scorePost(post.title, decoded) }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
     .map(({ post }) => post);
+    // Sort the results by score in descending order and map them to just the post objects.
 
    //make an array of each post tags that are active and split them where there is a comma to make them independent
     const tagList = getTagList(posts);
 
     //make an array of each post that is active and map its category
     const categoryList = getCategoryList(posts);
+    const dateList = history(posts);
+    const pageParams = searchParams ? await searchParams : {};
+    const requestedPage = Number.parseInt(pageParams.page ?? "1", 10);
+    const totalPages = Math.max(1, Math.ceil(results.length / POSTS_PER_PAGE));
+    const currentPage = Math.min(Math.max(Number.isNaN(requestedPage) ? 1 : requestedPage, 1), totalPages);
+    const pageResults = results.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
 
   return (
     <main className="blog-page">
@@ -46,6 +62,7 @@ export default async function SearchResults({ params }: { params: { name: string
         <Navigation
           categoryList={categoryList}
           tagList={tagList}
+          dateList={dateList}
         />
 
         <section className="blog-content">
@@ -56,7 +73,7 @@ export default async function SearchResults({ params }: { params: { name: string
 
           <div className="blog-grid">
             {results.length > 0 ? (
-              results.map((post) => (
+              pageResults.map((post) => (
                 <article key={post.id} className="blog-card">
                   <div className="blog-card-image" aria-hidden="true">
                     <img src={post.imageUrl} alt={post.title} />
@@ -87,6 +104,7 @@ export default async function SearchResults({ params }: { params: { name: string
                           {new Date(post.date).toLocaleDateString()}
                         </span>
                         <span className="blog-views">{post.views} views</span>
+                        <span className="blog-likes">{post.likes} likes</span>
                       </div>
                     </div>
                   </div>
@@ -96,6 +114,12 @@ export default async function SearchResults({ params }: { params: { name: string
               <p>0 posts found.</p>
             )}
           </div>
+
+          <nav className="pagination" aria-label="Search result pages">
+            {currentPage > 1 ? <a href={`/search/${name}?page=${currentPage - 1}`} className="pagination-link">Previous</a> : <span className="pagination-link pagination-link--disabled">Previous</span>}
+            <span className="pagination-status">Page {currentPage} of {totalPages}</span>
+            {currentPage < totalPages ? <a href={`/search/${name}?page=${currentPage + 1}`} className="pagination-link">Next</a> : <span className="pagination-link pagination-link--disabled">Next</span>}
+          </nav>
         </section>
       </div>
     </main>

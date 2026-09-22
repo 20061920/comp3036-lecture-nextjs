@@ -1,17 +1,26 @@
-// import jwt from "jsonwebtoken";
-// import { env } from "@repo/env/admin"
-
+import jwt from "jsonwebtoken";
+import { env } from "@repo/env/admin";
 import { cookies } from "next/headers";
-export async function isLoggedIn() {
-  const userCookies = await cookies();
 
-  // ASSIGNMENT 2
-  // check only that "auth_token" cookie exists
-  return userCookies.has("auth_token");
+const COOKIE_NAME = "auth_token";
 
-  // ASSIGNMENT 3
-  // check that auth_token cookie exists and is valid
-  // const token = userCookies.get("auth_token")?.value;
-
-  // return token && jwt.verify(token, env.JWT_SECRET || "");
+export function createAuthToken(username: string) {
+  return jwt.sign({ username }, env.JWT_SECRET, { expiresIn: "1h" });
 }
+
+export async function isLoggedIn(): Promise<boolean> {
+  const userCookies = await cookies();
+  const token = userCookies.get(COOKIE_NAME)?.value;
+
+  if (!token) {
+    return false;
+  }
+
+  try {
+    jwt.verify(token, env.JWT_SECRET);
+    return true;
+  } catch {
+    return false;
+  }
+}
+//checks if the user has a valid JWT token in the cookies, if not it will redirect to the login page. If the token is valid, it will return true.

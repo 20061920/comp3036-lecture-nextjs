@@ -1,14 +1,24 @@
-import { posts } from "@repo/db/data";
+import { client } from "@repo/db/client";
 import { toUrlPath } from "@repo/utils/url";
 import { Navigation } from "@/components/Navigation";
 import { getCategoryList } from "@/functions/categories";
 import { getTagList } from "@/functions/tags";
-import { getDateList } from "@/functions/history";
+import { history } from "@/functions/history";
+import { Search } from "@/components/SearchHeader";
 
-export default async function Home({ params }: { params: { name: string } }) {
+const POSTS_PER_PAGE = 6;
+
+export default async function Home({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ name: string }>;
+    searchParams?: Promise<{ page?: string }>;
+}) {
 
     //make dynamic route params with async. name is used as a dynamic paramater and is used for the url string and data passed
     const { name } = await params;
+    const posts = await client.db.post.findMany({ where: { active: true } });
 
     //make an array of each post tags that are active and split them where there is a comma to make them independent
     const tagList = getTagList(posts);
@@ -17,35 +27,28 @@ export default async function Home({ params }: { params: { name: string } }) {
     const categoryList = getCategoryList(posts);
     
     //make an array of each post that is active and map its date.
-    const Datelist = getDateList(posts);
+    const Datelist = history(posts);
 
     // filtered post goes through all posts and tries to find a match of the param that was entered.
     const filteredPosts = posts.filter(
-        (post) => post.active && toUrlPath(post.category) === name
+        (post) => toUrlPath(post.category) === name
     );
+    const pageParams = searchParams ? await searchParams : {};
+    const requestedPage = Number.parseInt(pageParams.page ?? "1", 10);
+    const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
+    const currentPage = Math.min(Math.max(Number.isNaN(requestedPage) ? 1 : requestedPage, 1), totalPages);
+    const pagePosts = filteredPosts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
 
     return (
+        
         <main className="blog-page">
-            <header className="blog-header">
-                <a className="blog-brand" href="/">FullStack Blog</a>
-                <div className="blog-search-wrap">
-                    <svg className="blog-search-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <g>
-                            <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z" />
-                        </g>
-                    </svg>
-                    <input placeholder="Search" type="search" className="blog-search-input" />
-                </div>
-
-                <button type="button" className="theme-button" aria-label="Toggle theme">
-                    Theme
-                </button>
-            </header>
+            <Search />
 
             <div className="blog-body">
                 <Navigation
                     categoryList={categoryList}
                     tagList={tagList}
+                    dateList={Datelist}
                 />
 
                 <section className="blog-content">
@@ -55,7 +58,7 @@ export default async function Home({ params }: { params: { name: string } }) {
                     </div>
 
                     <div className="blog-grid">
-                        {filteredPosts.map((post) => (
+                        {pagePosts.map((post) => (
                             <article key={post.title} className="blog-card">
                                 <div className="blog-card-image" aria-hidden="true">
                                     <img src={post.imageUrl} alt={post.title} />
@@ -82,20 +85,20 @@ export default async function Home({ params }: { params: { name: string } }) {
                                         <div className="blog-meta-right">
                                             <span className="blog-date">{new Date(post.date).toLocaleDateString()}</span>
                                             <span className="blog-views">{post.views} views</span>
+                                            <span className="blog-likes">{post.likes} likes</span>
 
-                                            <button className="Btn">
-                                                <span className="leftContainer">
-                                                    <svg fill="white" viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"></path></svg>
-                                                    <span className="like">Like</span>
-                                                </span>
-                                                <span className="likeCount">{post.likes.toLocaleString()}</span>
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </article>
                         ))}
                     </div>
+
+                    <nav className="pagination" aria-label="Category pages">
+                        {currentPage > 1 ? <a href={`/category/${name}?page=${currentPage - 1}`} className="pagination-link">Previous</a> : <span className="pagination-link pagination-link--disabled">Previous</span>}
+                        <span className="pagination-status">Page {currentPage} of {totalPages}</span>
+                        {currentPage < totalPages ? <a href={`/category/${name}?page=${currentPage + 1}`} className="pagination-link">Next</a> : <span className="pagination-link pagination-link--disabled">Next</span>}
+                    </nav>
                 </section>
             </div>
         </main>
