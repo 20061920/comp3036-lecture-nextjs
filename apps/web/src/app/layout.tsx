@@ -1,7 +1,5 @@
-// import "@repo/ui/styles.css";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import Link from "next/link";
 
 // @ts-ignore: side-effect import for global CSS
 import "./globals.css";
@@ -17,13 +15,15 @@ export const metadata: Metadata = {
   description: "Blog about full stack development",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}
-      suppressHydrationWarning>
+      <body
+        className={roboto.variable}
+        suppressHydrationWarning
+      >
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -33,10 +33,10 @@ export default async function RootLayout({
                 }
               } catch (e) {}
             `,
-          }} // renders the dark mode class first on the server side to avoid flickering
+          }}
         />
         {children}
       </body>
     </html>
-  ); 
+  );
 }
